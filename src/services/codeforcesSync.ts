@@ -199,7 +199,7 @@ export async function syncCodeforcesAccount(
   }
 
   const contests: Contest[] = ratingHistory
-    .filter((r) => r.ratingUpdate !== 0 || r.rank > 0)
+    .filter((r) => (r.newRating - r.oldRating) !== 0 || r.rank > 0)
     .map((r) => ({
       id: `cf-contest-${r.contestId}`,
       name: r.contestName,
@@ -207,11 +207,11 @@ export async function syncCodeforcesAccount(
       rank: r.rank,
       solvedProblems: countSolvedInContest(submissions, r.contestId),
       penalty: 0,
-      ratingChange: r.ratingUpdate,
+      ratingChange: r.newRating - r.oldRating,
       problemsMissed: [],
       patternsLearned: [],
       mistakesMade: [],
-      date: new Date(r.ratingChangeTimeSeconds * 1000).toISOString(),
+      date: new Date(r.ratingUpdateTimeSeconds * 1000).toISOString(),
       createdAt: now,
       updatedAt: now,
     }));
