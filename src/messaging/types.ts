@@ -16,6 +16,7 @@ export type CfMessage =
         editorialUsed?: boolean;
         solvedSolo?: boolean;
         difficulty?: number;
+        solveTimeMinutes?: number;
       };
     }
   | { type: 'CF_ADD_REVIEW'; contestId: number; problemIndex: string; stage?: ReviewStage }
