@@ -29,11 +29,11 @@ export interface CfSubmission {
 export interface CfRatingChange {
   contestId: number;
   contestName: string;
+  handle: string;
   rank: number;
-  ratingUpdate: number;
+  ratingUpdateTimeSeconds: number;
   oldRating: number;
   newRating: number;
-  ratingChangeTimeSeconds: number;
 }
 
 interface CfApiResponse<T> {
