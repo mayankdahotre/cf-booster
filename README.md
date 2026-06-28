@@ -22,11 +22,11 @@ You need [Node.js](https://nodejs.org/) 18+ and Google Chrome.
 ### 1. Get the code
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/cf-booster.git
+git clone https://github.com/mayankdahotre/cf-booster.git
 cd cf-booster
 ```
 
-Or download the latest **Source code** zip from [Releases](https://github.com/YOUR_USERNAME/cf-booster/releases) and extract it.
+Or download the latest **Source code** zip from [Releases](https://github.com/mayankdahotre/cf-booster/releases) and extract it.
 
 ### 2. Build the extension
 

@@ -56,4 +56,4 @@ We may update this policy in the GitHub repository. Continued use after changes 
 
 ## Contact
 
-Open an issue on the [GitHub repository](https://github.com/YOUR_USERNAME/cf-booster/issues).
+Open an issue on the [GitHub repository](https://github.com/mayankdahotre/cf-booster/issues).
