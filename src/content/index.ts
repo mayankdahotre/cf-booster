@@ -21,6 +21,19 @@ interface SidebarState {
 
 let sidebarVisible = true;
 let currentMeta: SidebarState | null = null;
+let timerInterval: number | null = null;
+let secondsElapsed = 0;
+
+function formatTime(sec: number) {
+  const m = Math.floor(sec / 60).toString().padStart(2, '0');
+  const s = (sec % 60).toString().padStart(2, '0');
+  return `${m}:${s}`;
+}
+
+function updateTimerUI() {
+  const el = document.getElementById('cfb-timer');
+  if (el) el.textContent = formatTime(secondsElapsed);
+}
 
 function createSidebar() {
   if (document.getElementById(SIDEBAR_ID)) return;
@@ -53,6 +66,14 @@ function getSidebarHTML(): string {
         <div id="cfb-tags" style="display:flex;flex-wrap:wrap;gap:4px;margin-top:8px;"></div>
       </div>
       <div style="flex:1;overflow-y:auto;padding:12px;background:#fff;">
+        <div style="margin-bottom:12px; padding:8px 12px; border:1px solid #ddd; border-radius:4px; display:flex; align-items:center; justify-content:space-between; background:#fafafa;">
+          <div style="font-family:Consolas,monospace; font-size:18px; font-weight:bold; color:#333;" id="cfb-timer">00:00</div>
+          <div style="display:flex; gap:4px;">
+            <button id="cfb-timer-start" style="padding:2px 8px; cursor:pointer; background:#fff; border:1px solid #ccc; border-radius:3px;">▶</button>
+            <button id="cfb-timer-pause" style="padding:2px 8px; cursor:pointer; background:#fff; border:1px solid #ccc; border-radius:3px;">⏸</button>
+            <button id="cfb-timer-reset" style="padding:2px 8px; cursor:pointer; background:#fff; border:1px solid #ccc; border-radius:3px;">↺</button>
+          </div>
+        </div>
         <div class="cf-booster-field">
           <label>Observation</label>
           <textarea id="cfb-observation" placeholder="Key insight for this problem..."></textarea>
@@ -89,6 +110,30 @@ function bindSidebarEvents() {
   document.getElementById('cfb-solved')?.addEventListener('click', () => void persistProblem('solved'));
   document.getElementById('cfb-mastered')?.addEventListener('click', () => void persistProblem('mastered'));
   document.getElementById('cfb-review')?.addEventListener('click', () => void handleAddReview());
+
+  document.getElementById('cfb-timer-start')?.addEventListener('click', () => {
+    if (timerInterval) return;
+    timerInterval = window.setInterval(() => {
+      secondsElapsed++;
+      updateTimerUI();
+    }, 1000);
+  });
+  
+  document.getElementById('cfb-timer-pause')?.addEventListener('click', () => {
+    if (timerInterval) {
+      window.clearInterval(timerInterval);
+      timerInterval = null;
+    }
+  });
+  
+  document.getElementById('cfb-timer-reset')?.addEventListener('click', () => {
+    if (timerInterval) {
+      window.clearInterval(timerInterval);
+      timerInterval = null;
+    }
+    secondsElapsed = 0;
+    updateTimerUI();
+  });
 }
 
 function readFormData() {
@@ -127,6 +172,11 @@ async function populateSidebar(meta: NonNullable<ReturnType<typeof parseProblemF
     (document.getElementById('cfb-technique') as HTMLTextAreaElement).value = saved.technique ?? '';
     (document.getElementById('cfb-mistake') as HTMLTextAreaElement).value = saved.mistake ?? '';
     (document.getElementById('cfb-notes') as HTMLTextAreaElement).value = saved.personalNotes ?? '';
+    
+    if (saved.solveTimeMinutes) {
+      secondsElapsed = saved.solveTimeMinutes * 60;
+      updateTimerUI();
+    }
   }
 
   const nameEl = document.getElementById('cfb-problem-name');
@@ -162,6 +212,7 @@ async function persistProblem(status?: string) {
     data: {
       ...form,
       status: status ?? currentMeta.status,
+      solveTimeMinutes: Math.round(secondsElapsed / 60) > 0 ? Math.round(secondsElapsed / 60) : undefined,
     },
   });
 
