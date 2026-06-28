@@ -11,6 +11,7 @@ const Contests = lazy(() => import('@/pages/Contests'));
 const Analytics = lazy(() => import('@/pages/Analytics'));
 const Settings = lazy(() => import('@/pages/Settings'));
 const Profile = lazy(() => import('@/pages/Profile'));
+const Tasks = lazy(() => import('@/pages/Tasks'));
 
 function PageLoader() {
   return (
@@ -37,6 +38,7 @@ export function AppRouter() {
             <Route path="/contests" element={<Contests />} />
             <Route path="/analytics" element={<Analytics />} />
             <Route path="/settings" element={<Settings />} />
+            <Route path="/tasks" element={<Tasks />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>

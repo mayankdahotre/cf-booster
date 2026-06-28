@@ -73,3 +73,16 @@ export function debounce<T extends (...args: unknown[]) => void>(fn: T, ms: numb
     timer = setTimeout(() => fn(...args), ms);
   }) as T;
 }
+
+/** Parse ISO or date strings without throwing (date-fns rejects Invalid Date) */
+export function safeParseDate(value: string | undefined | null): Date | null {
+  if (!value) return null;
+  const d = new Date(value);
+  return Number.isNaN(d.getTime()) ? null : d;
+}
+
+export function unixSecondsToIso(seconds: number | undefined, fallback: string): string {
+  if (seconds == null || !Number.isFinite(seconds)) return fallback;
+  const d = new Date(seconds * 1000);
+  return Number.isNaN(d.getTime()) ? fallback : d.toISOString();
+}

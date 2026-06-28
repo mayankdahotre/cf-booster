@@ -7,6 +7,7 @@ A Chrome extension for competitive programmers on [Codeforces](https://codeforce
 ## Features
 
 - **Dashboard** — rating goals, streak, daily tasks, heatmap, charts
+- **Tasks** — daily and weekly practice plans with auto-generated goals
 - **Codeforces sync** — import your AC submissions and contest history via handle
 - **Solved Problems** — searchable table with tags, techniques, notes
 - **Pattern Library** — add and organize recognition triggers and techniques

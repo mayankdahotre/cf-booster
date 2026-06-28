@@ -12,7 +12,7 @@ import { db } from '@/db';
 import { exportAllData, importData } from '@/services/problemService';
 import { codeforcesProfileUrl } from '@/services/codeforcesApi';
 import { syncCodeforcesAccount } from '@/services/codeforcesSync';
-import { downloadFile, getRatingColor, cn } from '@/utils';
+import { downloadFile, getRatingColor, cn, safeParseDate } from '@/utils';
 import { Download, Upload, Database, Bell, Keyboard, Cloud, User, ExternalLink, RefreshCw } from 'lucide-react';
 
 export default function SettingsPage() {
@@ -129,10 +129,10 @@ export default function SettingsPage() {
                   {settings.username && settings.username !== settings.handle && (
                     <p className="text-xs text-muted-foreground">{settings.username}</p>
                   )}
-                  {settings.lastCodeforcesSync && (
+                  {settings.lastCodeforcesSync && safeParseDate(settings.lastCodeforcesSync) && (
                     <p className="text-xs text-muted-foreground mt-0.5">
                       Last synced{' '}
-                      {formatDistanceToNow(new Date(settings.lastCodeforcesSync), {
+                      {formatDistanceToNow(safeParseDate(settings.lastCodeforcesSync)!, {
                         addSuffix: true,
                       })}
                     </p>

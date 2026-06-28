@@ -1,5 +1,5 @@
-import { db, generateId, problemId } from '@/db';
-import type { Problem, Contest, DailyTask, UserSettings } from '@/types';
+import { db, problemId } from '@/db';
+import type { Problem, Contest, UserSettings } from '@/types';
 import {
   fetchCodeforcesUser,
   fetchAllSubmissions,
@@ -7,7 +7,9 @@ import {
   displayNameFromUser,
   type CfSubmission,
 } from '@/services/codeforcesApi';
+import { generateDailyTasks, generateWeeklyTasks } from '@/services/dailyTasksService';
 import { formatISO, subDays, format } from 'date-fns';
+import { unixSecondsToIso } from '@/utils';
 
 export interface SyncResult {
   problemsSynced: number;
@@ -52,8 +54,12 @@ function buildSolvedProblemsMap(submissions: CfSubmission[]): Map<string, CfSubm
 function computeStreak(submissions: CfSubmission[]): number {
   const solvedDates = new Set<string>();
   submissions.forEach((s) => {
-    if (s.verdict === 'OK') {
-      solvedDates.add(format(new Date(s.creationTimeSeconds * 1000), 'yyyy-MM-dd'));
+    if (s.verdict !== 'OK') return;
+    if (Number.isFinite(s.creationTimeSeconds)) {
+      const d = new Date(s.creationTimeSeconds * 1000);
+      if (!Number.isNaN(d.getTime())) {
+        solvedDates.add(format(d, 'yyyy-MM-dd'));
+      }
     }
   });
 
@@ -81,67 +87,6 @@ function countSolvedInContest(submissions: CfSubmission[], contestId: number): n
   return solved.size;
 }
 
-async function generateDailyTasks(settings: UserSettings, problems: Problem[]): Promise<void> {
-  const today = formatISO(new Date(), { representation: 'date' });
-  await db.dailyTasks.where('date').equals(today).delete();
-
-  const tasks: DailyTask[] = [];
-  const target = settings.currentRating || 1200;
-
-  tasks.push({
-    id: generateId(),
-    type: 'solve',
-    description: `Solve 1 × ${target} rated problem on Codeforces`,
-    completed: false,
-    targetRating: target,
-    count: 1,
-    date: today,
-  });
-
-  tasks.push({
-    id: generateId(),
-    type: 'solve',
-    description: `Solve 1 × ${target + 100} rated problem on Codeforces`,
-    completed: false,
-    targetRating: target + 100,
-    count: 1,
-    date: today,
-  });
-
-  const reviewCount = await db.reviews.filter((r) => !r.skipped).count();
-  if (reviewCount > 0) {
-    tasks.push({
-      id: generateId(),
-      type: 'review',
-      description: `Review ${Math.min(reviewCount, 5)} problems from queue`,
-      completed: false,
-      count: Math.min(reviewCount, 5),
-      date: today,
-    });
-  }
-
-  const tagCounts: Record<string, number> = {};
-  problems.forEach((p) => {
-    p.tags.forEach((t) => {
-      tagCounts[t] = (tagCounts[t] || 0) + 1;
-    });
-  });
-
-  const weakTopic = Object.entries(tagCounts).sort((a, b) => a[1] - b[1])[0]?.[0];
-  if (weakTopic) {
-    tasks.push({
-      id: generateId(),
-      type: 'weak_topic',
-      description: `Practice ${weakTopic} problems`,
-      completed: false,
-      topic: weakTopic,
-      date: today,
-    });
-  }
-
-  if (tasks.length) await db.dailyTasks.bulkAdd(tasks);
-}
-
 export async function syncCodeforcesAccount(
   handle: string,
   options: { clearDemo?: boolean } = { clearDemo: true },
@@ -165,7 +110,7 @@ export async function syncCodeforcesAccount(
   for (const [id, sub] of solvedMap) {
     const existing = existingById.get(id);
     const p = sub.problem;
-    const solvedAt = new Date(sub.creationTimeSeconds * 1000).toISOString();
+    const solvedAt = unixSecondsToIso(sub.creationTimeSeconds, now);
 
     problems.push({
       id,
@@ -211,7 +156,7 @@ export async function syncCodeforcesAccount(
       problemsMissed: [],
       patternsLearned: [],
       mistakesMade: [],
-      date: new Date(r.ratingUpdateTimeSeconds * 1000).toISOString(),
+      date: unixSecondsToIso(r.ratingUpdateTimeSeconds, now),
       createdAt: now,
       updatedAt: now,
     }));
@@ -254,6 +199,7 @@ export async function syncCodeforcesAccount(
 
   await db.settings.put(updatedSettings);
   await generateDailyTasks(updatedSettings, problems);
+  await generateWeeklyTasks(updatedSettings, problems);
 
   return {
     problemsSynced: problems.length,

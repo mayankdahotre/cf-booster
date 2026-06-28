@@ -9,6 +9,7 @@ import {
   Clock,
   TrendingUp,
   BookOpen,
+  Circle,
 } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { StatCard } from '@/components/StatCard';
@@ -26,7 +27,9 @@ import { db } from '@/db';
 import { useSettingsStore } from '@/store';
 import { cn, getRatingColor, getRatingBg } from '@/utils';
 import { filterDueReviews, todayDateString } from '@/utils/reviews';
+import { toggleTaskComplete, taskTypeColor, isDailyTask } from '@/services/dailyTasksService';
 import { format } from 'date-fns';
+import { Link } from 'react-router-dom';
 
 export default function DashboardPage() {
   const settings = useSettingsStore((s) => s.settings);
@@ -39,7 +42,10 @@ export default function DashboardPage() {
   const solvedProblems = problems.filter((p) => p.status !== 'not_solved');
   const dueReviews = filterDueReviews(reviews);
   const today = todayDateString();
-  const todayTasks = dailyTasks.filter((t) => t.date === today && !t.completed);
+  const todayTasks = dailyTasks
+    .filter((t) => isDailyTask(t) && t.date === today)
+    .sort((a, b) => Number(a.completed) - Number(b.completed));
+  const todayIncomplete = todayTasks.filter((t) => !t.completed);
 
   const lastContestChange =
     [...contests].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0]
@@ -200,15 +206,33 @@ export default function DashboardPage() {
 
           <Card className="lg:col-span-2">
             <CardHeader>
-              <CardTitle className="text-sm flex items-center gap-2">
-                <BookOpen className="h-4 w-4" />
-                Today&apos;s Tasks
-              </CardTitle>
+              <div className="flex items-center justify-between gap-2">
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <BookOpen className="h-4 w-4" />
+                  Today&apos;s Tasks
+                  {todayTasks.length > 0 && (
+                    <Badge variant="secondary" className="text-[10px]">
+                      {todayTasks.filter((t) => t.completed).length}/{todayTasks.length}
+                    </Badge>
+                  )}
+                </CardTitle>
+                <Link
+                  to="/tasks"
+                  className="text-xs text-cf-link hover:underline no-underline"
+                >
+                  Manage tasks →
+                </Link>
+              </div>
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
                 {todayTasks.length === 0 && (
-                  <p className="text-sm text-muted-foreground px-1">No tasks scheduled for today.</p>
+                  <p className="text-sm text-muted-foreground px-1">
+                    No tasks for today.{' '}
+                    <Link to="/tasks" className="text-cf-link hover:underline">
+                      Generate your daily plan
+                    </Link>
+                  </p>
                 )}
                 {todayTasks.map((task, i) => (
                   <motion.div
@@ -216,23 +240,39 @@ export default function DashboardPage() {
                     initial={{ opacity: 0, x: -8 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: i * 0.05 }}
-                    className="flex items-center gap-3 rounded-lg border border-border/50 bg-background/30 px-4 py-3"
+                    className={cn(
+                      'flex items-center gap-3 rounded-lg border border-border/50 bg-background/30 px-4 py-3',
+                      task.completed && 'opacity-60',
+                    )}
                   >
-                    <div
-                      className={cn(
-                        'h-2 w-2 rounded-full',
-                        task.type === 'solve' && 'bg-cf-header',
-                        task.type === 'review' && 'bg-cf-link',
-                        task.type === 'weak_topic' && 'bg-cf-orange',
-                        task.type === 'contest' && 'bg-[#008000]',
+                    <button
+                      type="button"
+                      onClick={() => toggleTaskComplete(task.id)}
+                      className="shrink-0 text-cf-link hover:text-cf-header"
+                    >
+                      {task.completed ? (
+                        <CheckCircle2 className="h-4 w-4 text-[#008000]" />
+                      ) : (
+                        <Circle className="h-4 w-4" />
                       )}
-                    />
-                    <span className="text-sm flex-1">{task.description}</span>
+                    </button>
+                    <div className={cn('h-2 w-2 rounded-full shrink-0', taskTypeColor(task.type))} />
+                    <span
+                      className={cn(
+                        'text-sm flex-1',
+                        task.completed && 'line-through text-muted-foreground',
+                      )}
+                    >
+                      {task.description}
+                    </span>
                     <Badge variant="outline" className="text-[10px] capitalize">
                       {task.type.replace('_', ' ')}
                     </Badge>
                   </motion.div>
                 ))}
+                {todayIncomplete.length === 0 && todayTasks.length > 0 && (
+                  <p className="text-sm text-[#008000] px-1 pt-1">All tasks done for today!</p>
+                )}
               </div>
             </CardContent>
           </Card>

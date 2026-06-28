@@ -142,7 +142,10 @@ export interface DailyTask {
   targetRating?: number;
   count?: number;
   topic?: string;
+  /** Daily = single day; weekly = ISO date of week start (Monday) */
+  period: 'daily' | 'weekly';
   date: string;
+  source?: 'auto' | 'manual';
 }
 
 export interface HeatmapEntry {

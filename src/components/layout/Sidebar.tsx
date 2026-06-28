@@ -4,6 +4,7 @@ import {
   LayoutDashboard,
   ListChecks,
   BookOpen,
+  CalendarCheck,
   AlertTriangle,
   RotateCcw,
   Trophy,
@@ -20,6 +21,7 @@ import { Button } from '@/components/ui/button';
 
 const navItems = [
   { name: 'Dashboard', href: '/', icon: LayoutDashboard },
+  { name: 'Tasks', href: '/tasks', icon: CalendarCheck },
   { name: 'Problems', href: '/problems', icon: ListChecks },
   { name: 'Patterns', href: '/patterns', icon: BookOpen },
   { name: 'Mistakes', href: '/mistakes', icon: AlertTriangle },

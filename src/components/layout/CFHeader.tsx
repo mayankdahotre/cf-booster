@@ -4,6 +4,7 @@ import { cn, getRatingHex } from '@/utils';
 
 const navLinks = [
   { name: 'Dashboard', href: '/' },
+  { name: 'Tasks', href: '/tasks' },
   { name: 'Problems', href: '/problems' },
   { name: 'Patterns', href: '/patterns' },
   { name: 'Mistakes', href: '/mistakes' },

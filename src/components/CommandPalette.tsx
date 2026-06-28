@@ -6,6 +6,7 @@ import {
   LayoutDashboard,
   ListChecks,
   BookOpen,
+  CalendarCheck,
   AlertTriangle,
   RotateCcw,
   Trophy,
@@ -20,6 +21,7 @@ import { cn } from '@/utils';
 
 const pages = [
   { name: 'Dashboard', href: '/', icon: LayoutDashboard },
+  { name: 'Tasks', href: '/tasks', icon: CalendarCheck },
   { name: 'Problems', href: '/problems', icon: ListChecks },
   { name: 'Pattern Library', href: '/patterns', icon: BookOpen },
   { name: 'Mistake Log', href: '/mistakes', icon: AlertTriangle },

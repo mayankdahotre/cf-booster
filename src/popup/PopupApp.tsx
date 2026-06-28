@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { ExternalLink, RotateCcw, Flame, Target } from 'lucide-react';
 import { db } from '@/db';
 import { seedDatabase } from '@/db/seed';
+import { ensureAllTasks, todayDateString, isDailyTask } from '@/services/dailyTasksService';
 import { cn, getRatingColor } from '@/utils';
 
 export function PopupApp() {
@@ -17,10 +18,14 @@ export function PopupApp() {
   useEffect(() => {
     async function load() {
       await seedDatabase();
-      const [reviews, settings, tasks] = await Promise.all([
+      const settings = await db.settings.get('default');
+      await ensureAllTasks(settings ?? undefined);
+      const today = todayDateString();
+      const [reviews, tasks] = await Promise.all([
         db.reviews.filter((r) => !r.skipped).count(),
-        db.settings.get('default'),
-        db.dailyTasks.filter((t) => !t.completed).count(),
+        db.dailyTasks
+          .filter((t) => isDailyTask(t) && t.date === today && !t.completed)
+          .count(),
       ]);
       setStats({
         reviewCount: reviews,

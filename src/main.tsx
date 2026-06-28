@@ -5,6 +5,7 @@ import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { seedDatabase } from '@/db/seed';
 import { migrateChromeStorageProblems } from '@/services/migrate';
 import { syncCodeforcesAccount } from '@/services/codeforcesSync';
+import { ensureAllTasks } from '@/services/dailyTasksService';
 import { db } from '@/db';
 import { useSettingsStore, useAppStore } from '@/store';
 import '@/styles/globals.css';
@@ -38,7 +39,10 @@ function AppInitializer({ children }: { children: React.ReactNode }) {
           }
         }
 
-        if (settings) setSettings(settings);
+        if (settings) {
+          setSettings(settings);
+          await ensureAllTasks(settings);
+        }
       } catch (error) {
         console.error('[CF Booster] Failed to initialize database:', error);
       } finally {
