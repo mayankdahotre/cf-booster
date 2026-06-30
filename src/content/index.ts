@@ -57,7 +57,10 @@ function getSidebarHTML(): string {
   return `
     <div style="height:100%;background:#fff;border-left:1px solid #b9b9b9;display:flex;flex-direction:column;overflow:hidden;">
       <div style="padding:12px 16px;background:#2175a4;color:#fff;border-bottom:1px solid #1a5f8a;">
-        <div style="font-weight:bold;font-size:14px;margin-bottom:6px;">CF Booster</div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+          <div style="font-weight:bold;font-size:14px;">CF Booster</div>
+          <button id="cfb-minimize" title="Minimize sidebar" style="background:rgba(255,255,255,0.2);border:none;border-radius:3px;color:#fff;cursor:pointer;font-size:12px;font-weight:bold;line-height:1;padding:4px 8px;">−</button>
+        </div>
         <h3 id="cfb-problem-name" style="font-size:14px;font-weight:bold;color:#fff;margin:0 0 6px;">Loading...</h3>
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
           <span id="cfb-rating" style="font-size:12px;font-weight:bold;font-family:Consolas,monospace;"></span>
@@ -110,6 +113,7 @@ function bindSidebarEvents() {
   document.getElementById('cfb-solved')?.addEventListener('click', () => void persistProblem('solved'));
   document.getElementById('cfb-mastered')?.addEventListener('click', () => void persistProblem('mastered'));
   document.getElementById('cfb-review')?.addEventListener('click', () => void handleAddReview());
+  document.getElementById('cfb-minimize')?.addEventListener('click', toggleSidebar);
 
   document.getElementById('cfb-timer-start')?.addEventListener('click', () => {
     if (timerInterval) return;
